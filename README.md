@@ -1,14 +1,12 @@
-# Python Template
+# Pre-trained reaction models
 
-**Project description here**
-
-This is a template project so I don't need to keep setting up pre-commit.
+Repo containing pre-trained reactions models wrapped with syntheseus.
 
 ## Development
 
 ### Installation
 
-**Installation instructions here**
+Main dependency is `syntheseus`, everything else depends on the specific reaction model.
 
 ### Formatting
 
@@ -27,3 +25,11 @@ pre-commit install
 ```
 
 Now a series of useful checks will be run before any commit.
+
+### Testing
+
+Run tests with:
+
+```bash
+python -m pytest tests/
+```
