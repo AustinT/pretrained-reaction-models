@@ -45,6 +45,10 @@ class RetroStarValueMLP(NoCacheNodeEvaluator[OrNode]):
     def _evaluate_nodes(
         self, nodes: Sequence[OrNode], graph: Optional[AndOrGraph] = None
     ) -> list[float]:
+        # Edge case: no input mols
+        if len(nodes) == 0:
+            return []
+
         fps = batch_smiles_to_fp(
             [node.mol.smiles for node in nodes], fp_dim=self._fp_dim
         )

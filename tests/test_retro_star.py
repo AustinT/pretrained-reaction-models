@@ -9,13 +9,13 @@ import pytest
 
 from syntheseus.search.chem import Molecule, BackwardReaction
 from syntheseus.search.graph.and_or import OrNode
-from syntheseus.search.node_evaluation.base import NoCacheNodeEvaluator
 from syntheseus.search.node_evaluation.common import ConstantNodeEvaluator
 from syntheseus.search.algorithms.best_first.retro_star import RetroStarSearch
 from syntheseus.search.analysis.route_extraction import min_cost_routes
 
 from retro_star import (
     RetroStarReactionModel,
+    RetroStarReactionCostFunction,
     RetroStarInventory,
     RetroStarValueMLP,
     file_names,
@@ -117,14 +117,14 @@ def test_retro_star_reaction_model(test_routes):
         assert expected_rxn in outputs
 
 
-class RetroStarReactionCostFunction(NoCacheNodeEvaluator):
-    def _evaluate_nodes(self, nodes, graph=None) -> list[float]:
-        return [n.reaction.metadata["cost"] for n in nodes]
-
-
 @pytest.mark.parametrize("test_idx", sorted(index_to_route_plan.keys()))
 def test_found_retro_star0_route(test_idx: int, test_smiles_list: list[str]) -> None:
-    """Test that retro*-0 finds exact route from the paper."""
+    """
+    Test that retro*-0 finds exact route from the paper.
+
+    NOTE: there appears to be some randomness in these tests: sometimes they fail,
+    sometimes they don't. If it fails I suggest re-running it.
+    """
 
     # Load molecules and inventory
     rxn_model = RetroStarReactionModel()

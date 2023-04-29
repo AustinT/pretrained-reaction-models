@@ -4,6 +4,7 @@ import numpy as np
 from rdkit import RDLogger
 from syntheseus.search.chem import Molecule, BackwardReaction
 from syntheseus.search.reaction_models import BackwardReactionModel
+from syntheseus.search.node_evaluation.base import NoCacheNodeEvaluator
 
 from .retro_star_code.mlp_inference import MLPModel
 from . import file_names
@@ -64,3 +65,10 @@ class RetroStarReactionModel(BackwardReactionModel):
 
             output.append(curr_output)
         return output
+
+
+class RetroStarReactionCostFunction(NoCacheNodeEvaluator):
+    """Cost function designed to work with reaction model above."""
+
+    def _evaluate_nodes(self, nodes, graph=None) -> list[float]:
+        return [n.reaction.metadata["cost"] for n in nodes]
