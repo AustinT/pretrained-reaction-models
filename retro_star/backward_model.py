@@ -5,7 +5,7 @@ from rdkit import RDLogger
 from syntheseus.search.chem import Molecule, BackwardReaction
 from syntheseus.search.reaction_models import BackwardReactionModel
 
-from .mlp_retrosyn.mlp_inference import MLPModel
+from .retro_star_code.mlp_inference import MLPModel
 from . import file_names
 
 DEFAULT_RETROSTAR_EXPANSION_TOPk = 50
@@ -18,7 +18,7 @@ lg.setLevel(RDLogger.CRITICAL)
 class RetroStarReactionModel(BackwardReactionModel):
     def __init__(
         self,
-        model_checkpoint: str = file_names.MODEL_CHECKPOINT,
+        model_checkpoint: str = file_names.RXN_MODEL_CHECKPOINT,
         template_file: str = file_names.TEMPLATES,
         expansion_topk: int = 50,
         **kwargs,

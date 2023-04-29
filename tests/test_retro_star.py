@@ -4,15 +4,22 @@ from __future__ import annotations
 import math
 import pickle
 
+import numpy as np
 import pytest
 
 from syntheseus.search.chem import Molecule, BackwardReaction
+from syntheseus.search.graph.and_or import OrNode
 from syntheseus.search.node_evaluation.base import NoCacheNodeEvaluator
 from syntheseus.search.node_evaluation.common import ConstantNodeEvaluator
 from syntheseus.search.algorithms.best_first.retro_star import RetroStarSearch
 from syntheseus.search.analysis.route_extraction import min_cost_routes
 
-from retro_star import RetroStarReactionModel, RetroStarInventory, file_names
+from retro_star import (
+    RetroStarReactionModel,
+    RetroStarInventory,
+    RetroStarValueMLP,
+    file_names,
+)
 
 index_to_route_plan = {
     1: "CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)O)[C@@H](F)C(=O)OC>0.0910>CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@@H](F)C(=O)OC|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@@H](F)C(=O)OC>0.6925>O=S(=O)(OS(=O)(=O)C(F)(F)F)C(F)(F)F.CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)OC|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)OC>0.1714>CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)O.CO|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)O>0.3300>COC(=O)[C@@H]1CCCN1.CCCCC(C(=O)O)C1OC(C)(C)OC1=O|CCCCC(C(=O)O)C1OC(C)(C)OC1=O>0.0010>COC(C)(C)OC.CCCCC(C(=O)O)C(O)C(=O)O",
@@ -116,7 +123,7 @@ class RetroStarReactionCostFunction(NoCacheNodeEvaluator):
 
 
 @pytest.mark.parametrize("test_idx", sorted(index_to_route_plan.keys()))
-def test_found_retro_star_route(test_idx: int, test_smiles_list: list[str]) -> None:
+def test_found_retro_star0_route(test_idx: int, test_smiles_list: list[str]) -> None:
     """Test that retro*-0 finds exact route from the paper."""
 
     # Load molecules and inventory
@@ -152,3 +159,17 @@ def test_found_retro_star_route(test_idx: int, test_smiles_list: list[str]) -> N
     assert math.isclose(
         synthesis_route_costs[route_idx], index_to_route_cost[test_idx], rel_tol=1e-3
     )
+
+
+def test_value_function() -> None:
+    """Test the retro-star value function."""
+    mols = [
+        Molecule("CCC"),
+        Molecule("c1ccccc1"),
+        Molecule("FCCCCCCF"),
+    ]
+
+    val_fn = RetroStarValueMLP()
+
+    output = val_fn([OrNode(mol=m) for m in mols])
+    assert np.allclose(output, [1.284, 1.392, 2.399], atol=1e-3)
