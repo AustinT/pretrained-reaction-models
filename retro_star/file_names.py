@@ -4,7 +4,7 @@ from pathlib import Path
 
 BASE_PATH = Path(__file__).parent.absolute() / "files"
 
-INVENTORY_CSV = str(BASE_PATH / "dataset" / "origin_dict.csv")
+INVENTORY_CSV = str(BASE_PATH / "dataset" / "origin_dict-canonical.csv")
 RXN_MODEL_CHECKPOINT = str(
     BASE_PATH / "one_step_model" / "saved_rollout_state_1_2048.ckpt"
 )
