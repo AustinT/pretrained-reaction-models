@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import pickle
 import sys
 import numpy as np
@@ -34,8 +35,8 @@ def retro_star_search(
     Do search on a list of SMILES strings and report the time of first solution.
     """
 
-    # Initialize algorithm
-    rxn_model = RetroStarReactionModel(use_cache=False)  # original paper had no caching
+    # Initialize algorithm.
+    rxn_model = RetroStarReactionModel(use_cache=False)  # no caching
     inventory = RetroStarInventory()
     if use_value_function:
         value_fn = RetroStarValueMLP()
@@ -48,6 +49,8 @@ def retro_star_search(
         and_node_cost_fn=RetroStarReactionCostFunction(),
         value_function=value_fn,
         time_limit_s=1_000,
+        max_expansion_depth=20,  # prevent overly-deep solutions
+        prevent_repeat_mol_in_trees=True,  # original paper did this
     )
 
     # Do search
@@ -64,6 +67,9 @@ def retro_star_search(
         for node in output_graph.nodes():
             node.data["analysis_time"] = node.data["num_calls_rxn_model"]
         soln_time = get_first_solution_time(output_graph)
+        assert (
+            math.isinf(soln_time) != output_graph.root_node.has_solution
+        )  # sanity check
         logger.debug(f"Done: nodes={len(output_graph)}, solution time = {soln_time}")
         min_soln_times.append(soln_time)
 
