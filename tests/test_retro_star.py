@@ -13,7 +13,7 @@ from syntheseus.search.node_evaluation.common import ConstantNodeEvaluator
 from syntheseus.search.algorithms.best_first.retro_star import RetroStarSearch
 from syntheseus.search.analysis.route_extraction import min_cost_routes
 
-from retro_star import (
+from retro_star_task import (
     RetroStarReactionModel,
     RetroStarReactionCostFunction,
     RetroStarInventory,

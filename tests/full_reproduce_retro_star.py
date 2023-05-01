@@ -15,7 +15,7 @@ from syntheseus.search.algorithms.best_first.retro_star import RetroStarSearch
 from syntheseus.search.analysis.solution_time import get_first_solution_time
 from syntheseus.search.node_evaluation.common import ConstantNodeEvaluator
 
-from retro_star import (
+from retro_star_task import (
     RetroStarReactionModel,
     RetroStarReactionCostFunction,
     RetroStarInventory,
