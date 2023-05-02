@@ -10,12 +10,14 @@ from collections import defaultdict
 def merge(reactant_d):
     ret = []
     for reactant, l in reactant_d.items():
-        ss, ts = zip(*l)
-        ret.append((reactant, sum(ss), list(ts)[0]))
-    reactants, scores, templates = zip(
+        ss, ts, ls = zip(*l)
+        ret.append(
+            (reactant, sum(ss), list(ts)[0], max(ls))
+        )  # give it largest logits value
+    reactants, scores, templates, logits = zip(
         *sorted(ret, key=lambda item: item[1], reverse=True)
     )
-    return list(reactants), list(scores), list(templates)
+    return list(reactants), list(scores), list(templates), list(logits)
 
 
 class MLPModel(object):
@@ -36,16 +38,19 @@ class MLPModel(object):
         arr = torch.tensor(arr, dtype=torch.float32)
         if self.device >= 0:
             arr = arr.to(self.device)
-        preds = self.net(arr)
-        preds = F.softmax(preds, dim=1)
+        logits = self.net(arr)
+        preds = F.softmax(logits, dim=1)
         if self.device >= 0:
+            logits = logits.cpu()
             preds = preds.cpu()
         probs, idx = torch.topk(preds, k=topk)
+        top_logits = logits.index_select(1, idx[0])
         # probs = F.softmax(probs,dim=1)
         rule_k = [self.idx2rules[id] for id in idx[0].numpy().tolist()]
         reactants = []
         scores = []
         templates = []
+        logits_list = []
         for i, rule in enumerate(rule_k):
             out1 = []
             try:
@@ -59,23 +64,32 @@ class MLPModel(object):
                     reactants.append(reactant)
                     scores.append(probs[0][i].item() / len(out1))
                     templates.append(rule)
+                    logits_list.append(top_logits[0][i].item())
             # out1 = rdchiralRunText(x, rule)
             except ValueError:
                 pass
         if len(reactants) == 0:
             return None
         reactants_d = defaultdict(list)
-        for r, s, t in zip(reactants, scores, templates):
+        for r, s, t, l in zip(reactants, scores, templates, logits_list):
             if "." in r:
                 str_list = sorted(r.strip().split("."))
-                reactants_d[".".join(str_list)].append((s, t))
+                reactants_d[".".join(str_list)].append((s, t, l))
             else:
-                reactants_d[r].append((s, t))
+                reactants_d[r].append((s, t, l))
 
-        reactants, scores, templates = merge(reactants_d)
+        # Important detail to note here (not clear from original code):
+        # for scores, they *sum* over all templates that produce a given reactant set
+        # for logits, I chose to provide the *maximum* logit (not really based on anything)
+        reactants, scores, templates, output_logits = merge(reactants_d)
         total = sum(scores)
         scores = [s / total for s in scores]
-        return {"reactants": reactants, "scores": scores, "template": templates}
+        return {
+            "reactants": reactants,
+            "scores": scores,
+            "template": templates,
+            "logits": output_logits,
+        }
 
 
 if __name__ == "__main__":
