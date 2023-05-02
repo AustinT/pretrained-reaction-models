@@ -1,10 +1,12 @@
 from __future__ import annotations
+from typing import Optional
 
 import numpy as np
 from rdkit import RDLogger
 from syntheseus.search.chem import Molecule, BackwardReaction
 from syntheseus.search.reaction_models import BackwardReactionModel
 from syntheseus.search.node_evaluation.base import NoCacheNodeEvaluator
+import torch
 
 from .retro_star_code.mlp_inference import MLPModel
 from . import file_names
@@ -22,13 +24,17 @@ class RetroStarReactionModel(BackwardReactionModel):
         model_checkpoint: str = file_names.RXN_MODEL_CHECKPOINT,
         template_file: str = file_names.TEMPLATES,
         expansion_topk: int = 50,
+        device: Optional[int] = None,
         **kwargs,
     ) -> None:
 
         super().__init__(**kwargs)
 
         self.expansion_topk = expansion_topk
-        self.model = MLPModel(model_checkpoint, template_file, device=-1)
+        if device is None:
+            # Smart default: CUDA if it is available
+            device = 0 if torch.cuda.is_available() else -1
+        self.model = MLPModel(model_checkpoint, template_file, device=device)
 
     def _get_backward_reactions(
         self, mols: list[Molecule]

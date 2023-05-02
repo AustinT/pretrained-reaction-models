@@ -17,9 +17,16 @@ class RetroStarValueMLP(NoCacheNodeEvaluator[OrNode]):
     """Wrapper for retro*'s pre-trained value function."""
 
     def __init__(
-        self, model_checkpoint: str = file_names.VALUE_MODEL_CHECKPOINT, **kwargs
+        self,
+        model_checkpoint: str = file_names.VALUE_MODEL_CHECKPOINT,
+        device: Optional[int] = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
+
+        if device is None:
+            # Smart default: CUDA if it is available
+            device = 0 if torch.cuda.is_available() else -1
 
         # Default values taken from:
         # https://github.com/binghong-ml/retro_star/blob/master/retro_star/common/parse_args.py
@@ -29,7 +36,7 @@ class RetroStarValueMLP(NoCacheNodeEvaluator[OrNode]):
             fp_dim=self._fp_dim,
             latent_dim=128,
             dropout_rate=0.1,
-            device=-1,
+            device=device,
         )
         self._value_mlp.load_state_dict(torch.load(model_checkpoint))
         self._value_mlp.eval()
