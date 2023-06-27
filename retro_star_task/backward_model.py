@@ -35,6 +35,7 @@ class RetroStarReactionModel(BackwardReactionModel):
             # Smart default: CUDA if it is available
             device = 0 if torch.cuda.is_available() else -1
         self.model = MLPModel(model_checkpoint, template_file, device=device)
+        self.model.net.eval()  # ensure eval mode
 
     def _get_backward_reactions(
         self, mols: list[Molecule]
