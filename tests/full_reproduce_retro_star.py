@@ -36,7 +36,7 @@ def retro_star_search(
     """
 
     # Initialize algorithm.
-    rxn_model = RetroStarReactionModel(use_cache=False)  # no caching
+    rxn_model = RetroStarReactionModel(use_cache=False)  # no caching (original paper did not use caching)
     inventory = RetroStarInventory()
     if use_value_function:
         value_fn = RetroStarValueMLP()
@@ -48,9 +48,10 @@ def retro_star_search(
         limit_reaction_model_calls=limit_rxn_model_calls,
         and_node_cost_fn=RetroStarReactionCostFunction(),
         value_function=value_fn,
-        time_limit_s=1_000,
-        max_expansion_depth=20,  # prevent overly-deep solutions
+        time_limit_s=10_000,
+        max_expansion_depth=50,  # prevent overly-deep solutions (note: not done in original paper)
         prevent_repeat_mol_in_trees=True,  # original paper did this
+        unique_nodes=False,  # run on tree, not graph
     )
 
     # Do search
