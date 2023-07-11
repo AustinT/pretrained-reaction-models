@@ -11,7 +11,7 @@ from syntheseus.search.chem import Molecule, BackwardReaction
 from syntheseus.search.graph.and_or import OrNode
 from syntheseus.search.node_evaluation.common import ConstantNodeEvaluator
 from syntheseus.search.algorithms.best_first.retro_star import RetroStarSearch
-from syntheseus.search.analysis.route_extraction import min_cost_routes
+from syntheseus.search.analysis.route_extraction import iter_routes_cost_order
 
 from retro_star_task import (
     RetroStarReactionModel,
@@ -20,6 +20,7 @@ from retro_star_task import (
     RetroStarValueMLP,
     file_names,
 )
+from retro_star_task.test_molecules import get_190_hard_test_smiles
 
 index_to_route_plan = {
     1: "CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)O)[C@@H](F)C(=O)OC>0.0910>CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@@H](F)C(=O)OC|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@@H](F)C(=O)OC>0.6925>O=S(=O)(OS(=O)(=O)C(F)(F)F)C(F)(F)F.CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)OC|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)OC>0.1714>CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)O.CO|CCCC[C@@H](C(=O)N1CCC[C@H]1C(=O)OC)[C@H](O)C(=O)O>0.3300>COC(=O)[C@@H]1CCCN1.CCCCC(C(=O)O)C1OC(C)(C)OC1=O|CCCCC(C(=O)O)C1OC(C)(C)OC1=O>0.0010>COC(C)(C)OC.CCCCC(C(=O)O)C(O)C(=O)O",
@@ -95,8 +96,8 @@ def test_routes() -> list[list[str]]:
 
 
 @pytest.fixture
-def test_smiles_list(test_routes: list[list[str]]) -> list[str]:
-    return [r[0].split(">")[0] for r in test_routes]
+def test_smiles_list() -> list[str]:
+    return get_190_hard_test_smiles()
 
 
 def test_retro_star_reaction_model(test_routes):
@@ -181,7 +182,7 @@ def test_found_retro_star0_route(test_idx: int, test_smiles_list: list[str]) -> 
 
     # Extract routes
     expected_reaction_set = rxn_string_to_reactions(index_to_route_plan[test_idx])
-    all_routes = list(min_cost_routes(output_graph, max_routes=100))
+    all_routes = list(iter_routes_cost_order(output_graph, max_routes=100))
     assert len(all_routes) > 0
     synthesis_routes = [output_graph.to_synthesis_graph(nodes=r) for r in all_routes]
     synthesis_route_reaction_sets = [frozenset(r.nodes()) for r in synthesis_routes]

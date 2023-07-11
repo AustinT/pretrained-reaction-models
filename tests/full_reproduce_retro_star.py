@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import logging
 import math
-import pickle
 import sys
 import numpy as np
 
@@ -20,7 +19,7 @@ from retro_star_task import (
     RetroStarReactionCostFunction,
     RetroStarInventory,
     RetroStarValueMLP,
-    file_names,
+    test_molecules,
 )
 
 
@@ -36,7 +35,9 @@ def retro_star_search(
     """
 
     # Initialize algorithm.
-    rxn_model = RetroStarReactionModel(use_cache=False)  # no caching (original paper did not use caching)
+    rxn_model = RetroStarReactionModel(
+        use_cache=False
+    )  # no caching (original paper did not use caching)
     inventory = RetroStarInventory()
     if use_value_function:
         value_fn = RetroStarValueMLP()
@@ -102,9 +103,7 @@ if __name__ == "__main__":
     )
 
     # Load all SMILES to test
-    with open(file_names.TEST_ROUTES, "rb") as f:
-        test_routes = pickle.load(f)
-    test_smiles = [r[0].split(">")[0] for r in test_routes]
+    test_smiles = test_molecules.get_190_hard_test_smiles()
     if args.limit_num_smiles is not None:
         test_smiles = test_smiles[: args.limit_num_smiles]
 
