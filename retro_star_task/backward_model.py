@@ -66,6 +66,7 @@ class RetroStarReactionModel(BackwardReactionModel):
                                 cost=float(costs[j]),
                                 score=float(priors[j]),
                                 template=templates[j],
+                                rank=j,
                             ),
                         )
                         curr_output.append(rxn)
