@@ -62,6 +62,9 @@ class MLPModel(object):
             # out1 = rdchiralRunText(x, rule)
             except ValueError:
                 pass
+            except RuntimeError as e:
+                print(f"RuntimeError encountered in rdchiralRunText: {e}")
+                pass
         if len(reactants) == 0:
             return None
         reactants_d = defaultdict(list)
