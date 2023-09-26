@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 from typing import Optional
 
 import numpy as np
@@ -25,6 +26,7 @@ class RetroStarReactionModel(BackwardReactionModel):
         template_file: str = file_names.TEMPLATES,
         expansion_topk: int = 50,
         device: Optional[int] = None,
+        shuffle: bool = False,
         **kwargs,
     ) -> None:
 
@@ -36,6 +38,8 @@ class RetroStarReactionModel(BackwardReactionModel):
             device = 0 if torch.cuda.is_available() else -1
         self.model = MLPModel(model_checkpoint, template_file, device=device)
         self.model.net.eval()  # ensure eval mode
+        self.random_state = random.Random()
+        self._shuffle = shuffle  # whether to shuffle reactions before outputting them
 
     def _get_backward_reactions(
         self, mols: list[Molecule]
@@ -71,6 +75,9 @@ class RetroStarReactionModel(BackwardReactionModel):
                         )
                         curr_output.append(rxn)
 
+            # Add to cumulative output list, optionally shuffling
+            if self._shuffle:
+                self.random_state.shuffle(curr_output)
             output.append(curr_output)
         return output
 
