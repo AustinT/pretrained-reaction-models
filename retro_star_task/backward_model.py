@@ -63,7 +63,10 @@ class RetroStarReactionModel(BackwardReactionModel):
                     for j in range(len(reactants)):
                         rxn = BackwardReaction(
                             reactants=frozenset(
-                                [Molecule(s) for s in reactants[j].split(".")]
+                                [
+                                    Molecule(s, canonicalize=True, make_rdkit_mol=False)
+                                    for s in reactants[j].split(".")
+                                ]
                             ),
                             product=mol,
                             metadata=dict(
