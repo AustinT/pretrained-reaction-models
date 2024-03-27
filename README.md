@@ -2,6 +2,12 @@
 
 Repo containing pre-trained reactions models wrapped with syntheseus.
 
+| :exclamation:  Note: |
+|----------------------|
+
+This repository is largely superseded by the [syntheseus-retro-star-benchmark](https://github.com/AustinT/syntheseus-retro-star-benchmark) package.
+It is recommended to use this instead.
+
 ## Development
 
 ### Installation
